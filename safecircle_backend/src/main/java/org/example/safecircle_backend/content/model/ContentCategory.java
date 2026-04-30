@@ -1,4 +1,11 @@
 package org.example.safecircle_backend.content.model;
 
-public class ContentCategory {
+public enum ContentCategory {
+    HIV,
+    STI,
+    MYTHS,
+    PREVENTION,
+    GENERAL
 }
+
+

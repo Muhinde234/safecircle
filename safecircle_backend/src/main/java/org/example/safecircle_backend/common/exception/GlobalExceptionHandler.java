@@ -12,14 +12,14 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler{
 
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value={IllegalArgumentException.class})
     public Map<String,String> handleIllegalArgumentExceptions (IllegalArgumentException ex){
 
         Map<String,String> errorResponse = new HashMap<>();
 
         errorResponse.put("Timestamp", Instant.now().toString());
-        errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.toString());
+        errorResponse.put("status", HttpStatus.BAD_REQUEST.toString());
         errorResponse.put("message", ex.getMessage());
 
         return errorResponse;
