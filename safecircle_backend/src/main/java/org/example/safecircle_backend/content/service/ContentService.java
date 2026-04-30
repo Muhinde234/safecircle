@@ -77,7 +77,6 @@ public class ContentService {
                 .items(itemList)
                 .category(category)
                 .total(itemList.size())
-                .category(category)
                 .build();
     }
 
@@ -103,7 +102,7 @@ public class ContentService {
 
         // Apply limit fallbacks and caps
         int finalLimit = 10;
-        if (limit != null && limit >= 0) {
+        if (limit != null && !(limit <= 0)) {
             finalLimit = limit;
 
             if (finalLimit > 50) {

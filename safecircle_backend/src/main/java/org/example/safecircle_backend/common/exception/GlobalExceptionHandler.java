@@ -1,6 +1,10 @@
 package org.example.safecircle_backend.common.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.example.safecircle_backend.common.dto.ApiErrorResponse;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -12,16 +16,41 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler{
 
+    private final MessageSource messageSource;
+
+    public GlobalExceptionHandler(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value={IllegalArgumentException.class})
-    public Map<String,String> handleIllegalArgumentExceptions (IllegalArgumentException ex){
+    public ApiErrorResponse handleIllegalArgumentExceptions (IllegalArgumentException ex, HttpServletRequest request){
 
-        Map<String,String> errorResponse = new HashMap<>();
+        return ApiErrorResponse.builder()
+                .timestamp(Instant.now().toString())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.toString())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+    }
 
-        errorResponse.put("Timestamp", Instant.now().toString());
-        errorResponse.put("status", HttpStatus.BAD_REQUEST.toString());
-        errorResponse.put("message", ex.getMessage());
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value={MethodArgumentNotValidException.class})
+    public ApiErrorResponse handleValidationExceptions (MethodArgumentNotValidException ex, HttpServletRequest request){
+        String message = "Validation Failed";
 
-        return errorResponse;
+        if(ex.getBindingResult().getFieldErrors().isEmpty()){
+            var fieldErrors = ex.getBindingResult().getFieldErrors().get(0);
+            message = fieldErrors.getField() + " : " + fieldErrors.getDefaultMessage();
+        }
+
+        return ApiErrorResponse.builder()
+                .timestamp(Instant.now().toString())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.toString())
+                .message(message)
+                .path(request.getRequestURI())
+                .build();
     }
 }
