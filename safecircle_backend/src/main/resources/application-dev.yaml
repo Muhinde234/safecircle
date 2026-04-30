@@ -1,0 +1,19 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # Add datasource settings here when you connect a database.
+  # datasource:
+  #   url: jdbc:postgresql://localhost:5432/safecircle_dev
+  #   username: postgres
+  #   password: postgres
+
+server:
+  port: 8089
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.example.safecircle_backend: DEBUG
