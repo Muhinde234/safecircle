@@ -94,6 +94,14 @@ export const translations = {
     mohNote: 'Approved by Rwanda Ministry of Health',
     dataNote: 'We do not sell, share, or monetize your health data — ever.',
 
+    // Welcome / onboarding screen
+    getStarted: 'Get Started',
+    haveAccount: 'I already have an account',
+    trust1: 'No name needed — explore anonymously',
+    trust2: 'Your conversations are private',
+    trust3: 'Approved by Rwanda Ministry of Health',
+    footerSlogan: 'Safe Circle · Health · Trust · Community',
+
     // Badges
     mohApproved: 'Rwanda MoH Approved',
     clinicallyVerified: 'Clinically Verified',
@@ -206,6 +214,14 @@ export const translations = {
     mohNote: "Yemewe n'Ubuzima bw'Igihugu rwa Rwanda",
     dataNote: "Ntitwigurishanya, ntitwemeza, cyangwa ntitwinjizamo amafaranga amakuru yawe y'ubuzima — na rimwe.",
 
+    // Welcome / onboarding screen
+    getStarted: 'Tangira',
+    haveAccount: 'Nfite konti',
+    trust1: 'Nta izina bisabwa — shakisha utamenyekana',
+    trust2: 'Ikiganiro cyawe ni ibanga',
+    trust3: "Yemewe n'Ubuzima bw'Igihugu rwa Rwanda",
+    footerSlogan: 'Safe Circle · Ubuzima · Icyizere · Ubumwe',
+
     // Badges
     mohApproved: "Yemewe na MoH Rwanda",
     clinicallyVerified: 'Byemezwa na Muganga',
@@ -226,3 +242,4 @@ export const translations = {
 
 export type TranslationKey = keyof typeof translations.en;
 export type Language = keyof typeof translations;
+export type Translations = typeof translations.en;
