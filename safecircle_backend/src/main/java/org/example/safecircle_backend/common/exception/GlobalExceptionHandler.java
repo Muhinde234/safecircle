@@ -31,15 +31,17 @@ public class GlobalExceptionHandler{
     public ApiErrorResponse handleValidationExceptions (MethodArgumentNotValidException ex, HttpServletRequest request){
         String message = "Validation Failed";
 
-        if(ex.getBindingResult().getFieldErrors().isEmpty()){
+        if(!ex.getBindingResult().getFieldErrors().isEmpty()){
             var fieldErrors = ex.getBindingResult().getFieldErrors().getFirst();
-            message = fieldErrors.getField() + " : " + fieldErrors.getDefaultMessage();
+//            message = fieldErrors.getField() + " : " + fieldErrors.getDefaultMessage();
+            message = fieldErrors.getDefaultMessage();
+
         }
 
         return ApiErrorResponse.builder()
                 .timestamp(Instant.now().toString())
                 .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.toString())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .message(message)
                 .path(request.getRequestURI())
                 .build();
