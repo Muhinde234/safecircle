@@ -1,6 +1,5 @@
-export const translations = {
-  en: {
-    appName: 'Safe Circle',
+const enTranslations = {
+  appName: 'Safe Circle',
     tagline: 'Your circle of trust',
     taglineKw: 'Ubuzima bwawe, amabanga yawe',
 
@@ -209,10 +208,10 @@ export const translations = {
     navLearn: 'Learn',
     navShield: 'Privacy',
     navProfile: 'Profile',
-  },
+} as const;
 
-  rw: {
-    appName: 'Safe Circle',
+const rwTranslations = {
+  appName: 'Safe Circle',
     tagline: "Umuzunguruko w'icyizere",
     taglineKw: 'Ubuzima bwawe, amabanga yawe',
 
@@ -424,6 +423,11 @@ export const translations = {
   },
 } as const;
 
-export type TranslationKey = keyof typeof translations.en;
+export const translations = {
+  en: enTranslations,
+  rw: rwTranslations,
+} as const;
+
+export type TranslationKey = keyof typeof enTranslations;
 export type Language = keyof typeof translations;
-export type Translations = typeof translations.en;
+export type Translations = typeof enTranslations;
