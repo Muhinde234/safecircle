@@ -5,6 +5,7 @@ export interface Clinic {
   address: string;
   district: string;
   distance: string;
+  distanceKm: number;
   phone: string;
   services: string[];
   servicesRw: string[];
@@ -12,6 +13,7 @@ export interface Clinic {
   hoursRw: string;
   isYouthFriendly: boolean;
   noJudgment: boolean;
+  anonymousVisits: boolean;
 }
 
 export const clinics: Clinic[] = [
@@ -22,6 +24,7 @@ export const clinics: Clinic[] = [
     address: 'KN 4 Ave, Kiyovu, Kigali',
     district: 'Nyarugenge',
     distance: '0.8 km',
+    distanceKm: 0.8,
     phone: '+250 788 000 001',
     services: ['HIV Testing & PrEP', 'Family Planning', 'Counseling', 'STI Treatment'],
     servicesRw: ['Isuzuma rya HIV & PrEP', 'Kubara Urubyaro', 'Ubujyanama', 'Kuvura STI'],
@@ -29,6 +32,7 @@ export const clinics: Clinic[] = [
     hoursRw: 'Ku wa 1–5: 8am–5pm',
     isYouthFriendly: true,
     noJudgment: true,
+    anonymousVisits: true,
   },
   {
     id: 2,
@@ -37,6 +41,7 @@ export const clinics: Clinic[] = [
     address: 'KG 9 Ave, Nyarugenge',
     district: 'Nyarugenge',
     distance: '1.2 km',
+    distanceKm: 1.2,
     phone: '+250 788 000 002',
     services: ['HIV Testing', 'PrEP', 'Mental Health', 'Counseling'],
     servicesRw: ['Isuzuma rya HIV', 'PrEP', 'Ubuzima bwo mu Mutwe', 'Ubujyanama'],
@@ -44,6 +49,7 @@ export const clinics: Clinic[] = [
     hoursRw: 'Ku wa 1–6: 8am–7pm',
     isYouthFriendly: true,
     noJudgment: true,
+    anonymousVisits: true,
   },
   {
     id: 3,
@@ -52,6 +58,7 @@ export const clinics: Clinic[] = [
     address: 'KG 7 Ave, Remera',
     district: 'Gasabo',
     distance: '2.4 km',
+    distanceKm: 2.4,
     phone: '+250 788 000 003',
     services: ['HIV Testing', 'Family Planning', 'Maternal Health'],
     servicesRw: ['Isuzuma rya HIV', 'Kubara Urubyaro', "Ubuzima bw'Umubyeyi"],
@@ -59,6 +66,7 @@ export const clinics: Clinic[] = [
     hoursRw: 'Ku wa 1–5: 7:30am–4:30pm',
     isYouthFriendly: true,
     noJudgment: false,
+    anonymousVisits: false,
   },
   {
     id: 4,
@@ -67,6 +75,7 @@ export const clinics: Clinic[] = [
     address: 'KK 15 Rd, Kicukiro',
     district: 'Kicukiro',
     distance: '3.1 km',
+    distanceKm: 3.1,
     phone: '+250 788 000 004',
     services: ['HIV Testing & ART', 'STI Treatment', 'Family Planning', 'Mental Health'],
     servicesRw: ['Isuzuma rya HIV & ART', 'Kuvura STI', 'Kubara Urubyaro', 'Ubuzima bwo mu Mutwe'],
@@ -74,6 +83,7 @@ export const clinics: Clinic[] = [
     hoursRw: 'Ku wa 1–5: 8am–6pm, ku wa 6: 9am–1pm',
     isYouthFriendly: true,
     noJudgment: true,
+    anonymousVisits: true,
   },
   {
     id: 5,
@@ -82,6 +92,7 @@ export const clinics: Clinic[] = [
     address: 'KG 544 St, Kiyovu',
     district: 'Nyarugenge',
     distance: '3.8 km',
+    distanceKm: 3.8,
     phone: '+250 788 000 005',
     services: ['HIV Testing', 'ART', 'Specialist Care', 'Family Planning'],
     servicesRw: ['Isuzuma rya HIV', 'ART', "Inzobere z'Ubuzima", 'Kubara Urubyaro'],
@@ -89,6 +100,41 @@ export const clinics: Clinic[] = [
     hoursRw: 'Ku wa 1–5: 8am–5pm',
     isYouthFriendly: false,
     noJudgment: true,
+    anonymousVisits: false,
+  },
+  {
+    id: 6,
+    name: 'Kacyiru District Hospital',
+    nameRw: 'Ibitaro bya Kacyiru',
+    address: 'KG 3 Ave, Kacyiru, Gasabo',
+    district: 'Gasabo',
+    distance: '1.0 km',
+    distanceKm: 1.0,
+    phone: '+250 788 000 006',
+    services: ['HIV Testing & PrEP', 'STI Treatment', 'Youth SRH', 'Counseling'],
+    servicesRw: ['Isuzuma rya HIV & PrEP', 'Kuvura STI', "SRH y'Urubyiruko", 'Ubujyanama'],
+    hours: 'Mon–Fri: 7am–6pm, Sat: 8am–1pm',
+    hoursRw: 'Ku wa 1–5: 7am–6pm, ku wa 6: 8am–1pm',
+    isYouthFriendly: true,
+    noJudgment: true,
+    anonymousVisits: true,
+  },
+  {
+    id: 7,
+    name: 'Kimironko Health Centre',
+    nameRw: 'Ikigo cy\'Ubuzima cya Kimironko',
+    address: 'KG 11 Ave, Kimironko, Gasabo',
+    district: 'Gasabo',
+    distance: '1.1 km',
+    distanceKm: 1.1,
+    phone: '+250 788 000 007',
+    services: ['HIV Testing', 'Family Planning', 'Youth Friendly SRH', 'PrEP'],
+    servicesRw: ['Isuzuma rya HIV', 'Kubara Urubyaro', "SRH y'Urubyiruko", 'PrEP'],
+    hours: 'Mon–Sat: 7:30am–5pm',
+    hoursRw: 'Ku wa 1–6: 7:30am–5pm',
+    isYouthFriendly: true,
+    noJudgment: true,
+    anonymousVisits: true,
   },
 ];
 
@@ -112,7 +158,7 @@ export const articles: Article[] = [
     titleRw: 'Gusobanukirwa na PrEP: Amahirwe yo Kwirinda HIV',
     category: 'HIV & STIs',
     readTime: 4,
-    excerpt: 'PrEP is a once-daily pill that can prevent HIV by up to 99%. Learn who it's for and how to access it in Kigali.',
+    excerpt: "PrEP is a once-daily pill that can prevent HIV by up to 99%. Learn who it's for and how to access it in Kigali.",
     excerptRw: "PrEP ni ikinini kimwe ku munsi gishobora kwirinda HIV kugeza 99%. Menya uwo iyibereye n'uko uyihabwa i Kigali.",
     isVerified: true,
     isFeatured: true,
