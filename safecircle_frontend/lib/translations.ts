@@ -420,7 +420,6 @@ const rwTranslations = {
     navLearn: 'Menya',
     navShield: 'Ibanga',
     navProfile: 'Profil',
-  },
 } as const;
 
 export const translations = {
