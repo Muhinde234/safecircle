@@ -92,7 +92,7 @@ export default function WelcomePage() {
         <div className="flex-1 flex flex-col items-center justify-center gap-7">
 
           {/* Logo mark + wordmark */}
-          <motion.div variants={item} className="flex flex-col items-center gap-2">
+          <motion.div className="flex flex-col items-center gap-2">
             <SafeCircleLogo size={88} className="text-teal" />
             <p className="font-heading font-bold text-[26px] text-deep-navy tracking-tight mt-1">
               Safe Circle
@@ -101,21 +101,21 @@ export default function WelcomePage() {
 
           {/* Tagline */}
           <motion.p
-            variants={item}
+          
             className="font-body text-base text-deep-navy/80 text-center leading-relaxed max-w-65"
           >
             {t.tagline}
           </motion.p>
 
           {/* Trust bullets */}
-          <motion.div variants={item} className="w-full flex flex-col gap-3.5">
+          <motion.div className="w-full flex flex-col gap-3.5">
             <TrustBullet icon={ShieldCheck} text={t.trust1} />
             <TrustBullet icon={Lock}        text={t.trust2} />
             <TrustBullet icon={HeartPulse}  text={t.trust3} />
           </motion.div>
 
           {/* CTA buttons */}
-          <motion.div variants={item} className="w-full flex flex-col gap-3 mt-1">
+          <motion.div  className="w-full flex flex-col gap-3 mt-1">
             <Link
               href="/explore"
               className="flex items-center justify-center w-full h-14 bg-teal text-white font-heading font-bold text-base rounded-xl shadow-sm active:opacity-90 transition-opacity"
@@ -134,7 +134,7 @@ export default function WelcomePage() {
 
         {/* Footer tagline */}
         <motion.p
-          variants={item}
+       
           className="text-center font-body text-xs text-slate-gray pb-safe py-6"
         >
           {t.footerSlogan}
