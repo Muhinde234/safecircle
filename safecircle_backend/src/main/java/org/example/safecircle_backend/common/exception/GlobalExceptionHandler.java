@@ -33,8 +33,7 @@ public class GlobalExceptionHandler{
 
         if(!ex.getBindingResult().getFieldErrors().isEmpty()){
             var fieldErrors = ex.getBindingResult().getFieldErrors().getFirst();
-//            message = fieldErrors.getField() + " : " + fieldErrors.getDefaultMessage();
-            message = fieldErrors.getDefaultMessage();
+            message = fieldErrors.getField() + " : " + fieldErrors.getDefaultMessage();
 
         }
 

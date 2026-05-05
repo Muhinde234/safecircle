@@ -12,6 +12,10 @@ public class RiskAssessmentService {
         String action;
         String urgency;
 
+        if (request.getHoursSinceEvent() < 0){
+            request.setHoursSinceEvent(0);
+        }
+
         if(request.getHoursSinceEvent() <= 72 && request.isSymptomsPresent()){
             level = RiskLevel.HIGH;
             action = "Please visit an emergency clinic for PEP (Post-Exposure Prophylaxis).";

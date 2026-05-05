@@ -10,11 +10,28 @@ import java.time.Instant;
 public class ChatService {
 
     public ChatMessageResponse reply(ChatMessageRequest request) {
+
         String userMessage = request.getMessage().trim().toLowerCase();
         String userLanguage = request.getLanguage();
 
         String botReply = "Welcome to SafeCircle!!";
 
+        if(request.getSessionId() == null || request.getSessionId().isBlank()){
+            throw new IllegalArgumentException("You don't have an active session. " +
+                    "Please create a nickname to continue.");
+
+        }
+
+        if(userMessage.trim().isEmpty()){
+            throw new IllegalArgumentException("Something went wrong. " +
+                    "Please send the message again");
+        }
+
+        if(userLanguage == null|| userLanguage.isBlank()){
+            request.setLanguage("en");
+        }
+
+        assert userLanguage != null;
         if (userLanguage.equals("en")) {
             if(userMessage.contains("hiv") || userMessage.contains("sti")) {
                 botReply = "It's brave to ask. Testing is the only way to know your status. Would you like to find a clinic?";
