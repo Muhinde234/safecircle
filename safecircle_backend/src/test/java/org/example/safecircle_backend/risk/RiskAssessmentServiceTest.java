@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class RiskAssessmentServiceTest {
 
@@ -62,5 +63,21 @@ public class RiskAssessmentServiceTest {
         assertNotNull(response);
         assertEquals(RiskLevel.LOW, response.getRiskLevel());
         assertEquals("Next available appointment", response.getUrgencyWindow());
+    }
+
+    @Test
+    void shouldThrowWhenHoursSinceEventIsNegative() {
+        RiskAssessmentRequest request = RiskAssessmentRequest.builder()
+                .eventType("unprotected sex")
+                .hoursSinceEvent(-1)
+                .symptomsPresent(false)
+                .build();
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> riskAssessmentService.assess(request)
+        );
+
+        assertEquals("hoursSinceEvent must be 0 or greater.", ex.getMessage());
     }
 }

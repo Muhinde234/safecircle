@@ -13,6 +13,7 @@ public class ChatService {
 
         String userMessage = request.getMessage().trim().toLowerCase();
         String userLanguage = request.getLanguage();
+        String effectiveLanguage = (userLanguage == null || userLanguage.isBlank()) ? "en" : userLanguage.toLowerCase();
 
         String botReply = "Welcome to SafeCircle!!";
 
@@ -27,12 +28,7 @@ public class ChatService {
                     "Please send the message again");
         }
 
-        if(userLanguage == null|| userLanguage.isBlank()){
-            request.setLanguage("en");
-        }
-
-        assert userLanguage != null;
-        if (userLanguage.equals("en")) {
+        if (effectiveLanguage.equals("en")) {
             if(userMessage.contains("hiv") || userMessage.contains("sti")) {
                 botReply = "It's brave to ask. Testing is the only way to know your status. Would you like to find a clinic?";
 

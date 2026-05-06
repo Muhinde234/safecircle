@@ -60,4 +60,18 @@ class ChatServiceTest {
         assertNotNull(response);
         assertTrue(response.getReply().toLowerCase().contains("i'm here to listen"));
     }
+
+    @Test
+    void shouldDefaultLanguageToEnglishWhenMissing() {
+        ChatMessageRequest request = ChatMessageRequest.builder()
+                .sessionId("session-4")
+                .message("Need HIV advice")
+                .language(null)
+                .build();
+
+        ChatMessageResponse response = chatService.reply(request);
+
+        assertNotNull(response);
+        assertTrue(response.getReply().toLowerCase().contains("testing is the only way"));
+    }
 }

@@ -43,4 +43,13 @@ class RiskControllerTest {
                 .andExpect(jsonPath("$.riskLevel").value("MEDIUM"))
                 .andExpect(jsonPath("$.urgencyWindow").value("Within 48-72 hours"));
     }
+
+    @Test
+    void shouldReturnBadRequestForNegativeHoursSinceEvent() throws Exception {
+        mockMvc.perform(post("/api/v1/risk/assess")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"eventType\":\"unprotected sex\",\"hoursSinceEvent\":-1,\"symptomsPresent\":false}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
 }

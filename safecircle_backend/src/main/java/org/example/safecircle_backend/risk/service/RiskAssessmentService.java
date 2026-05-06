@@ -13,7 +13,7 @@ public class RiskAssessmentService {
         String urgency;
 
         if (request.getHoursSinceEvent() < 0){
-            request.setHoursSinceEvent(0);
+            throw new IllegalArgumentException("hoursSinceEvent must be 0 or greater.");
         }
 
         if(request.getHoursSinceEvent() <= 72 && request.isSymptomsPresent()){
