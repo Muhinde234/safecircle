@@ -31,7 +31,7 @@ class EventServiceTest {
         TrackEventResponse response = eventService.trackEvent(request);
 
         assertNotNull(response);
-        assertEquals("Success", response.getStatus());
+        assertEquals("RECORDED", response.getStatus());
         assertEquals(EventType.CHAT_SENT, response.getEventType());
         assertEquals("session-123", response.getSessionId());
         assertNotNull(response.getRecordedAt());
@@ -62,6 +62,6 @@ class EventServiceTest {
                 () -> eventService.trackEvent(request)
         );
 
-        assertTrue(ex.getMessage().contains("Invalid event type"));
+        assertEquals("Invalid event type null", ex.getMessage());
     }
 }

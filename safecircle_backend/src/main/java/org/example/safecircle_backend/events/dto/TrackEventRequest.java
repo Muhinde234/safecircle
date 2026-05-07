@@ -2,6 +2,7 @@ package org.example.safecircle_backend.events.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +23,6 @@ public class TrackEventRequest {
     @NotNull(message = "An event type must provided")
     private EventType eventType;
 
-    private Map<String,String> metadata;
+    @Size(max = 10, message = "Metadata cannot exceed 10 entries")
+    private Map<String,@Size(max = 255) String> metadata;
 }
