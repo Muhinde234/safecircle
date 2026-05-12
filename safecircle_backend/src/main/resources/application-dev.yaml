@@ -3,11 +3,16 @@ spring:
     activate:
       on-profile: dev
 
-  # Add datasource settings here when you connect a database.
-  # datasource:
-  #   url: jdbc:postgresql://localhost:5432/safecircle_dev
-  #   username: postgres
-  #   password: postgres
+    import: optional:file:.env[properties]
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
+
+  flyway:
+    enabled: true
 
 server:
   port: 8089

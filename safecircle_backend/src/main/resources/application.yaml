@@ -1,6 +1,7 @@
 spring:
   application:
     name: safecircle-backend
+
   profiles:
     # Default profile for local development.
     # Override with: SPRING_PROFILES_ACTIVE=prod
