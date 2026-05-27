@@ -27,3 +27,5 @@ out/
 node_modules/
 dist/
 coverage/
+
+explanation.txt

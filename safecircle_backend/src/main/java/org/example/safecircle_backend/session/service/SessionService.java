@@ -2,9 +2,10 @@ package org.example.safecircle_backend.session.service;
 
 import org.example.safecircle_backend.session.dto.CreateSessionRequest;
 import org.example.safecircle_backend.session.dto.SessionResponse;
+import org.example.safecircle_backend.session.model.AnonymousSession;
+import org.example.safecircle_backend.session.repository.AnonymousSessionRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -12,54 +13,66 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class SessionService {
 
-    // 1. Defined a list of adjectives
+    private final AnonymousSessionRepository sessionRepository;
+
     private static final List<String> ADJECTIVES = List.of(
             "anonymous", "mysterious", "happy", "silent",
             "brave", "clever", "gentle", "sneaky", "swift"
     );
 
-    // 2. Defined a list of animals
     private static final List<String> ANIMALS = List.of(
             "cheetah", "axolotl", "koala", "dolphin",
             "panda", "fox", "badger", "penguin", "lemur"
     );
 
-    // Generates a nickname when none is provided
-    private String generateGuestNickname(){
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-
-        // Picks a random index for both lists
-        String adjective = ADJECTIVES.get(random.nextInt(ADJECTIVES.size()));
-        String animal = ANIMALS.get(random.nextInt(ANIMALS.size()));
-
-        // Join them together to form an anonymous user
-        return adjective + "_" + animal;
-
+    public SessionService(AnonymousSessionRepository sessionRepository) {
+        this.sessionRepository = sessionRepository;
     }
 
-    // Used to handle incoming nicknames (trims spaces or generates a new one if blank)
-    private String resolveNickname(String rawNickname){
-        if(rawNickname == null || rawNickname.isBlank()){
+    private String generateGuestNickname() {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        String adjective = ADJECTIVES.get(random.nextInt(ADJECTIVES.size()));
+        String animal = ANIMALS.get(random.nextInt(ANIMALS.size()));
+        return adjective + "_" + animal;
+    }
+
+    private String resolveNickname(String rawNickname) {
+        if (rawNickname == null || rawNickname.isBlank()) {
             return generateGuestNickname();
-        } if(rawNickname.length() > 20){
-            throw new IllegalArgumentException(rawNickname.trim() + " is too long for a nickname." + " Please try again!");
+        }
+        if (rawNickname.trim().length() > 20) {
+            throw new IllegalArgumentException(rawNickname.trim() + " is too long for a nickname. Please try again!");
         }
         return rawNickname.trim();
     }
 
-    // Generate a Session response
-    private SessionResponse generateSessionResponse(String nickname){
-        return SessionResponse.builder()
+    public SessionResponse createAnonymousSession(CreateSessionRequest request) {
+        String nickname = resolveNickname(request.getNickname());
+
+        AnonymousSession session = AnonymousSession.builder()
                 .nickname(nickname)
-                .sessionId(UUID.randomUUID().toString())
-                .createdAt(Instant.now().toString())
+                .language("en")
+                .isPrivateSession(false)
+                .build();
+
+        AnonymousSession saved = sessionRepository.save(session);
+
+        return SessionResponse.builder()
+                .sessionId(saved.getId().toString())
+                .nickname(saved.getNickname())
+                .createdAt(saved.getCreatedAt().toString())
                 .build();
     }
 
-    // Uses the nickname to create an anonymous session
-    public SessionResponse createAnonymousSession(CreateSessionRequest createSessionRequest) {
-
-        return generateSessionResponse(resolveNickname(createSessionRequest.getNickname()));
+    public AnonymousSession getSessionById(String sessionId) {
+        UUID id;
+        try {
+            id = UUID.fromString(sessionId);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid session ID format.");
+        }
+        return sessionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Session not found. Please create a new session."));
     }
-
 }

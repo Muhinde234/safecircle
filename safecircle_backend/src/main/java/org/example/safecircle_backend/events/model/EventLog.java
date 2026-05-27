@@ -3,8 +3,7 @@ package org.example.safecircle_backend.events.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.example.safecircle_backend.session.model.AnonymousSession;
 import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
@@ -16,7 +15,10 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Builder
 @Table(name = "event_log")
+@NoArgsConstructor
+@AllArgsConstructor
 public class EventLog {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -37,7 +39,7 @@ public class EventLog {
 
     @Column(name = "metadata")
     @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, Object> metadata;
+    private Map<String, String> metadata;
 
     @CreationTimestamp
     @NotNull

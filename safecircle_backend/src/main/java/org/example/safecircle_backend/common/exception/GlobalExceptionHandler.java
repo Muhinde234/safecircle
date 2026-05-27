@@ -45,4 +45,16 @@ public class GlobalExceptionHandler{
                 .path(request.getRequestURI())
                 .build();
     }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Exception.class)
+    public ApiErrorResponse handleGenericException(Exception ex, HttpServletRequest request) {
+        return ApiErrorResponse.builder()
+                .timestamp(Instant.now().toString())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message("An unexpected error occurred. Please try again.")
+                .path(request.getRequestURI())
+                .build();
+    }
 }

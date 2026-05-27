@@ -1,21 +1,37 @@
 package org.example.safecircle_backend.events.service;
 
-import jakarta.validation.constraints.Size;
 import org.example.safecircle_backend.events.dto.TrackEventRequest;
 import org.example.safecircle_backend.events.dto.TrackEventResponse;
-import org.example.safecircle_backend.events.model.EventType;
+import org.example.safecircle_backend.events.model.EventLog;
+import org.example.safecircle_backend.events.repository.EventLogRepository;
+import org.example.safecircle_backend.session.model.AnonymousSession;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 
 @Service
 public class EventService {
 
+    private final EventLogRepository eventLogRepo;
+
+    public EventService(EventLogRepository eventLogRepo) {
+        this.eventLogRepo = eventLogRepo;
+    }
+
     private static final String STATUS_RECORDED = "RECORDED";
     private static final List<String> PII_KEYS = Arrays.asList("email", "phone", "name", "address");
     private final List<TrackEventResponse> eventLog = new ArrayList<>();
+
+    private Map<String, String> sanitize(Map<String,String> metadata) {
+        if (metadata == null) return null;
+
+        Map<String, String> clean = new HashMap<>(metadata);
+
+        PII_KEYS.forEach(key -> clean.computeIfPresent(key, (k, v) -> "[MASKED]"));
+
+        return clean;
+    }
 
     private TrackEventResponse eventResponse(TrackEventRequest request) {
         if (request.getEventType() == null) {
@@ -38,17 +54,17 @@ public class EventService {
 
         System.out.println("Event Recorded: " + response.getEventType() + " for session " + response.getSessionId());
 
+        EventLog log = EventLog.builder()
+                .session(new AnonymousSession())
+                .status("RECORDED")
+                .eventType(request.getEventType())
+                .metadata(request.getMetadata())
+                .recordedAt(Instant.now().atOffset(java.time.ZoneOffset.UTC))
+                .build();
+
+        EventLog eventLog = eventLogRepo.save(log);
+
         return response;
-    }
-
-    private Map<String, String> sanitize(Map<String,String> metadata) {
-        if (metadata == null) return null;
-
-        Map<String, String> clean = new HashMap<>(metadata);
-
-        PII_KEYS.forEach(key -> clean.computeIfPresent(key, (k, v) -> "[MASKED]"));
-
-        return clean;
     }
 
     public List<TrackEventResponse> viewEventLogs() {

@@ -48,12 +48,13 @@ public class ChatMessage {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    @NotNull
     @Column(name = "role", columnDefinition = "chat_role not null")
     @Enumerated(EnumType.STRING)
-    private Object role;
+    private ChatRole role;
 
     @Column(name = "source", columnDefinition = "chat_source")
     @Enumerated(EnumType.STRING)
-    private Object source;
+    private ChatSource source;
 
 }

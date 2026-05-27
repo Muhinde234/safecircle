@@ -10,7 +10,7 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 public class SafeCircleBackendApplication {
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         SpringApplication.run(SafeCircleBackendApplication.class, args);
     }
 
