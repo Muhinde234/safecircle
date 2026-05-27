@@ -37,6 +37,7 @@ public class AnonymousSession {
 
     @NotNull
     @ColumnDefault("false")
+    @Builder.Default
     @Column(name = "is_private_session", nullable = false)
     private Boolean isPrivateSession = false;
 
