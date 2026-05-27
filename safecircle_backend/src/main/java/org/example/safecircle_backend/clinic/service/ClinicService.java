@@ -1,65 +1,73 @@
 package org.example.safecircle_backend.clinic.service;
 
 import org.example.safecircle_backend.clinic.dto.ClinicResponse;
+import org.example.safecircle_backend.clinic.model.Clinic;
+import org.example.safecircle_backend.clinic.repository.ClinicRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Service
 public class ClinicService {
 
-    private final List<ClinicResponse> mockClinics = Arrays.asList(
-            new ClinicResponse(
-                    "41bcd968-aeea-4e66-9b4c-d26a3ab6c520",
-                    "Kigali Youth Center Clinic",
-                    "Gasabo",
-                    "KG 345 ST 6",
-                    true,
-                    "+250780000000",
-                    Arrays.asList("Internal Medicine", "Family Planning"),
-                    "Free counseling and STI testing in a private, non-judgmental environment."
-            ),
-            new ClinicResponse("" +
-                    "41bcd968-aeea-4e66-9b4c-d26a3ab6c522",
-                    "Nyamirambo Wellness Center",
-                    "Nyarugenge",
-                    "KN 345 ST 6",
-                    true,
-                    "+250780000001",
-                    Arrays.asList("Dentistry", "Family Planning"),
-                    "Confidential consultation and contraception access."
-            ),
-            new ClinicResponse(
-                    "41bcd968-aeea-4e66-9b4c-d26a3ab6c524",
-                    "Kicukiro Health Facility",
-                    "Kicukiro",
-                    "KK 345 ST 6",
-                    false,
-                    "+250780000002",
-                    Arrays.asList("Ophthalmology", "Family Planning"),
-                    "General STI testing and reproductive health information."
-            )
-    );
+    private final ClinicRepository clinicRepository;
 
-    private List<String> VALID_DISTRICTS = Arrays.asList("Gasabo", "Nyarugenge", "Kicukiro");
+    private static final List<String> VALID_DISTRICTS = List.of("Gasabo", "Nyarugenge", "Kicukiro");
 
+    public ClinicService(ClinicRepository clinicRepository) {
+        this.clinicRepository = clinicRepository;
+    }
+
+    private ClinicResponse toResponse(Clinic clinic) {
+        List<String> services = clinic.getClinicServices().stream()
+                .map(s -> s.getId().getServiceName())
+                .toList();
+
+        return ClinicResponse.builder()
+                .id(clinic.getId().toString())
+                .name(clinic.getName())
+                .district(clinic.getDistrict())
+                .address(clinic.getAddress())
+                .youthFriendly(clinic.getYouthFriendly())
+                .contactInfo(clinic.getContactInfo())
+                .services(services)
+                .whatToExpect(clinic.getWhatToExpect())
+                .build();
+    }
 
     public List<ClinicResponse> getClinics(String district, Boolean youthFriendly, String service) {
-        if(district !=null && !district.isBlank()) {
-            boolean isValid = VALID_DISTRICTS.stream()
-                    .anyMatch(d -> d.equalsIgnoreCase(district.trim()));
-            System.out.println("District "+district+" is valid? "+isValid);
-            if(!isValid) {
-                throw new IllegalArgumentException("Invalid district: " + district);
-            }
+        if (district != null && !district.isBlank()) {
+            boolean valid = VALID_DISTRICTS.stream().anyMatch(d -> d.equalsIgnoreCase(district.trim()));
+            if (!valid) throw new IllegalArgumentException("Invalid district: " + district);
         }
 
-        return mockClinics.stream()
-                .filter(c -> district == null || district.isBlank()  || c.getDistrict().equalsIgnoreCase(district.trim()))
-                .filter(c -> youthFriendly == null || c.isYouthFriendly() == youthFriendly)
-                .filter(c -> service == null || service.isBlank() || c.getServices().stream()
-                        .anyMatch(s -> s.toLowerCase().contains(service.trim().toLowerCase())))
-                .toList();
+        List<Clinic> clinics;
+
+        boolean hasDistrict = district != null && !district.isBlank();
+        boolean hasYouthFriendly = youthFriendly != null;
+        boolean hasService = service != null && !service.isBlank();
+
+        if (hasDistrict && hasYouthFriendly) {
+            clinics = clinicRepository.findByDistrictIgnoreCaseAndYouthFriendly(district.trim(), youthFriendly);
+        } else if (hasDistrict) {
+            clinics = clinicRepository.findByDistrictIgnoreCase(district.trim());
+        } else if (hasYouthFriendly) {
+            clinics = clinicRepository.findByYouthFriendly(youthFriendly);
+        } else if (hasService) {
+            clinics = clinicRepository.findByServiceNameContainingIgnoreCase(service.trim());
+        } else {
+            clinics = clinicRepository.findAll();
+        }
+
+        // Apply service filter as a post-filter when combined with other filters
+        if (hasService && (hasDistrict || hasYouthFriendly)) {
+            String svc = service.trim().toLowerCase();
+            clinics = clinics.stream()
+                    .filter(c -> c.getClinicServices().stream()
+                            .anyMatch(s -> s.getId().getServiceName().toLowerCase().contains(svc)))
+                    .toList();
+        }
+
+        return clinics.stream().map(this::toResponse).toList();
     }
 }
