@@ -1,14 +1,14 @@
 package org.example.safecircle_backend.chat.controller;
 
 import jakarta.validation.Valid;
+import org.example.safecircle_backend.chat.dto.ChatHistoryResponse;
 import org.example.safecircle_backend.chat.dto.ChatMessageRequest;
 import org.example.safecircle_backend.chat.dto.ChatMessageResponse;
 import org.example.safecircle_backend.chat.service.ChatService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/chat")
@@ -16,12 +16,17 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    public ChatController (ChatService chatService) {
+    public ChatController(ChatService chatService) {
         this.chatService = chatService;
     }
 
     @PostMapping("/messages")
-    public ResponseEntity<ChatMessageResponse> reply(@RequestBody @Valid ChatMessageRequest request){
+    public ResponseEntity<ChatMessageResponse> reply(@RequestBody @Valid ChatMessageRequest request) {
         return ResponseEntity.ok(chatService.reply(request));
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<ChatHistoryResponse>> getHistory(@RequestParam String sessionId) {
+        return ResponseEntity.ok(chatService.getHistory(sessionId));
     }
 }

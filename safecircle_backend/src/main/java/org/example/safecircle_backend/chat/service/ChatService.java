@@ -1,52 +1,91 @@
 package org.example.safecircle_backend.chat.service;
 
+import lombok.extern.slf4j.Slf4j;
+import org.example.safecircle_backend.chat.dto.ChatHistoryResponse;
 import org.example.safecircle_backend.chat.dto.ChatMessageRequest;
 import org.example.safecircle_backend.chat.dto.ChatMessageResponse;
+import org.example.safecircle_backend.chat.model.ChatMessage;
+import org.example.safecircle_backend.chat.model.ChatRole;
+import org.example.safecircle_backend.chat.model.ChatSource;
+import org.example.safecircle_backend.chat.repository.ChatMessageRepository;
+import org.example.safecircle_backend.session.model.AnonymousSession;
+import org.example.safecircle_backend.session.service.SessionService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
+@Slf4j
 @Service
 public class ChatService {
 
+    private final ChatMessageRepository chatMessageRepository;
+    private final SessionService sessionService;
+
+    public ChatService(ChatMessageRepository chatMessageRepository, SessionService sessionService) {
+        this.chatMessageRepository = chatMessageRepository;
+        this.sessionService = sessionService;
+    }
+
+    private String buildReply(String userMessage) {
+        String msg = userMessage.trim().toLowerCase();
+        if (msg.contains("hiv") || msg.contains("sti")) {
+            return "It's brave to ask. Testing is the only way to know your status. Would you like to find a clinic?";
+        } else if (msg.contains("prep")) {
+            return "PrEP is a daily pill that highly effectively prevents HIV. It is a great way to take control of your health.";
+        } else if (msg.contains("clinic")) {
+            return "I can help you find a non-judgmental clinic nearby. Are you looking for testing or a general checkup?";
+        }
+        return "I'm here to listen. Can you tell me a bit more about what's on your mind?";
+    }
+
     public ChatMessageResponse reply(ChatMessageRequest request) {
+        AnonymousSession session = sessionService.getSessionById(request.getSessionId());
 
-        String userMessage = request.getMessage().trim().toLowerCase();
-        String userLanguage = request.getLanguage();
-        String effectiveLanguage = (userLanguage == null || userLanguage.isBlank()) ? "en" : userLanguage.toLowerCase();
+        String language = (request.getLanguage() == null || request.getLanguage().isBlank())
+                ? "en" : request.getLanguage().toLowerCase();
 
-        String botReply = "Welcome to SafeCircle!!";
+        String botReply = buildReply(request.getMessage());
 
-        if(request.getSessionId() == null || request.getSessionId().isBlank()){
-            throw new IllegalArgumentException("You don't have an active session. " +
-                    "Please create a nickname to continue.");
+        // Persist user message
+        ChatMessage userMsg = new ChatMessage();
+        userMsg.setSession(session);
+        userMsg.setMessageText(request.getMessage());
+        userMsg.setRole(ChatRole.USER);
+        userMsg.setLanguage(language);
+        chatMessageRepository.save(userMsg);
 
-        }
+        // Persist assistant reply
+        ChatMessage assistantMsg = new ChatMessage();
+        assistantMsg.setSession(session);
+        assistantMsg.setMessageText(botReply);
+        assistantMsg.setRole(ChatRole.ASSISTANT);
+        assistantMsg.setSource(ChatSource.RULE_BASED);
+        assistantMsg.setLanguage(language);
+        chatMessageRepository.save(assistantMsg);
 
-        if(userMessage.trim().isEmpty()){
-            throw new IllegalArgumentException("Something went wrong. " +
-                    "Please send the message again");
-        }
+        log.info("Chat message processed for session {}", request.getSessionId());
 
-        if (effectiveLanguage.equals("en")) {
-            if(userMessage.contains("hiv") || userMessage.contains("sti")) {
-                botReply = "It's brave to ask. Testing is the only way to know your status. Would you like to find a clinic?";
-
-            } else if(userMessage.contains("prep")) {
-                botReply = "PrEP is a daily pill that highly effectively prevents HIV. It is a great way to take control of your health.";
-
-            } else if(userMessage.contains("clinic")) {
-                botReply = "I can help you find a non-judgmental clinic nearby. Are you looking for testing or a general checkup?";
-
-            } else {
-                botReply = "I'm here to listen. Can you tell me a bit more about what's on your mind?";
-            }
-        }
-        
         return ChatMessageResponse.builder()
                 .reply(botReply)
                 .source("RULE_BASED")
                 .timestamp(Instant.now().toString())
                 .build();
+    }
+
+    public List<ChatHistoryResponse> getHistory(String sessionId) {
+        AnonymousSession session = sessionService.getSessionById(sessionId);
+
+        return chatMessageRepository.findBySessionIdOrderByCreatedAtAsc(session.getId())
+                .stream()
+                .map(m -> ChatHistoryResponse.builder()
+                        .id(m.getId().toString())
+                        .role(m.getRole() != null ? m.getRole().name() : null)
+                        .message(m.getMessageText())
+                        .source(m.getSource() != null ? m.getSource().name() : null)
+                        .language(m.getLanguage())
+                        .createdAt(m.getCreatedAt() != null ? m.getCreatedAt().toString() : null)
+                        .build())
+                .toList();
     }
 }
