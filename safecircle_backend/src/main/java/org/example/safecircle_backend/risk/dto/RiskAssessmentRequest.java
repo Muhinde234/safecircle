@@ -13,6 +13,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RiskAssessmentRequest {
+    @NotNull(message = "A session ID is required.")
+    @NotBlank(message = "A session ID is required.")
+    private String sessionId;
+
     @NotNull(message = "Please tell us what happened...")
     @NotBlank(message = "Please tell us what happened...")
     private String eventType;

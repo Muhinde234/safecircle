@@ -38,7 +38,7 @@ class RiskControllerTest {
 
         mockMvc.perform(post("/api/v1/risk/assess")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"eventType\":\"unprotected sex\",\"hoursSinceEvent\":36,\"symptomsPresent\":false}"))
+                        .content("{\"sessionId\":\"session-abc\",\"eventType\":\"unprotected sex\",\"hoursSinceEvent\":36,\"symptomsPresent\":false}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.riskLevel").value("MEDIUM"))
                 .andExpect(jsonPath("$.urgencyWindow").value("Within 48-72 hours"));
@@ -48,7 +48,16 @@ class RiskControllerTest {
     void shouldReturnBadRequestForNegativeHoursSinceEvent() throws Exception {
         mockMvc.perform(post("/api/v1/risk/assess")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"eventType\":\"unprotected sex\",\"hoursSinceEvent\":-1,\"symptomsPresent\":false}"))
+                        .content("{\"sessionId\":\"session-abc\",\"eventType\":\"unprotected sex\",\"hoursSinceEvent\":-1,\"symptomsPresent\":false}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenSessionIdMissing() throws Exception {
+        mockMvc.perform(post("/api/v1/risk/assess")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sessionId\":\"\",\"eventType\":\"unprotected sex\",\"hoursSinceEvent\":24,\"symptomsPresent\":false}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
     }
