@@ -3,6 +3,7 @@ package org.example.safecircle_backend.chat;
 import org.example.safecircle_backend.chat.dto.ChatHistoryResponse;
 import org.example.safecircle_backend.chat.dto.ChatMessageRequest;
 import org.example.safecircle_backend.chat.dto.ChatMessageResponse;
+import org.example.safecircle_backend.chat.dto.ModeratedMessageResponse;
 import org.example.safecircle_backend.chat.model.ChatMessage;
 import org.example.safecircle_backend.chat.model.ChatRole;
 import org.example.safecircle_backend.chat.model.ChatSource;
@@ -41,7 +42,7 @@ class ChatServiceTest {
     void setUp() {
         chatService = new ChatService(chatMessageRepository, sessionService);
         mockSession = AnonymousSession.builder().nickname("tester").language("en").build();
-        Mockito.when(sessionService.getSessionById(SESSION_ID)).thenReturn(mockSession);
+        Mockito.lenient().when(sessionService.getSessionById(SESSION_ID)).thenReturn(mockSession);
     }
 
     private void stubSave() {
@@ -124,5 +125,67 @@ class ChatServiceTest {
         assertEquals(1, history.size());
         assertEquals("Hello", history.getFirst().getMessage());
         assertEquals("USER", history.getFirst().getRole());
+    }
+
+    @Test
+    void shouldFlagMessageSuccessfully() {
+        UUID messageId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID();
+        AnonymousSession session = AnonymousSession.builder()
+                .id(sessionId)
+                .nickname("tester")
+                .language("en")
+                .build();
+
+        ChatMessage msg = new ChatMessage();
+        msg.setMessageText("inappropriate text");
+        msg.setSession(session);
+        try {
+            var idField = ChatMessage.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(msg, messageId);
+        } catch (Exception ignored) {}
+
+        Mockito.when(chatMessageRepository.findById(messageId)).thenReturn(java.util.Optional.of(msg));
+        Mockito.when(chatMessageRepository.save(Mockito.any(ChatMessage.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ModeratedMessageResponse response = chatService.flagMessage(messageId, "spam");
+
+        assertNotNull(response);
+        assertEquals(messageId.toString(), response.getId());
+        assertTrue(response.getIsFlagged());
+        assertEquals("spam", response.getModerationNotes());
+    }
+
+    @Test
+    void shouldReturnFlaggedMessagesList() {
+        UUID messageId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID();
+        AnonymousSession session = AnonymousSession.builder()
+                .id(sessionId)
+                .nickname("tester")
+                .language("en")
+                .build();
+
+        ChatMessage msg = new ChatMessage();
+        msg.setMessageText("inappropriate text");
+        msg.setSession(session);
+        msg.setIsFlagged(true);
+        msg.setModerationNotes("spam");
+        try {
+            var idField = ChatMessage.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(msg, messageId);
+        } catch (Exception ignored) {}
+
+        Mockito.when(chatMessageRepository.findByIsFlaggedTrueOrderByCreatedAtDesc())
+                .thenReturn(List.of(msg));
+
+        List<ModeratedMessageResponse> flagged = chatService.getFlaggedMessages();
+
+        assertEquals(1, flagged.size());
+        assertEquals(messageId.toString(), flagged.getFirst().getId());
+        assertTrue(flagged.getFirst().getIsFlagged());
+        assertEquals("spam", flagged.getFirst().getModerationNotes());
     }
 }

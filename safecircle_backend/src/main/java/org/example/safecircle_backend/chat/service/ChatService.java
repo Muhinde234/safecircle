@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
+import org.example.safecircle_backend.chat.dto.ModeratedMessageResponse;
 
 @Slf4j
 @Service
@@ -87,5 +89,33 @@ public class ChatService {
                         .createdAt(m.getCreatedAt() != null ? m.getCreatedAt().toString() : null)
                         .build())
                 .toList();
+    }
+
+    public ModeratedMessageResponse flagMessage(UUID messageId, String notes) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found with id: " + messageId));
+        message.setIsFlagged(true);
+        message.setModerationNotes(notes);
+        ChatMessage saved = chatMessageRepository.save(message);
+        return mapToModeratedResponse(saved);
+    }
+
+    public List<ModeratedMessageResponse> getFlaggedMessages() {
+        return chatMessageRepository.findByIsFlaggedTrueOrderByCreatedAtDesc()
+                .stream()
+                .map(this::mapToModeratedResponse)
+                .toList();
+    }
+
+    private ModeratedMessageResponse mapToModeratedResponse(ChatMessage message) {
+        return ModeratedMessageResponse.builder()
+                .id(message.getId().toString())
+                .sessionId(message.getSession().getId().toString())
+                .nickname(message.getSession().getNickname())
+                .messageText(message.getMessageText())
+                .createdAt(message.getCreatedAt() != null ? message.getCreatedAt().toString() : null)
+                .isFlagged(message.getIsFlagged())
+                .moderationNotes(message.getModerationNotes())
+                .build();
     }
 }

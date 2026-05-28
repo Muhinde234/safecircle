@@ -14,6 +14,7 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -142,5 +143,50 @@ class ApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.startQuestionId").value("q_event"))
                 .andExpect(jsonPath("$.questions").isNotEmpty());
+    }
+
+    @Test
+    void moderationEndpointsWorkEndToEnd() throws Exception {
+        // 1. Create a session
+        MvcResult sessionResult = mockMvc.perform(post("/api/v1/sessions/anonymous")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nickname\":\"moderationUser\"}"))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String sessionBody = sessionResult.getResponse().getContentAsString();
+        String sessionId = sessionBody.split("\"sessionId\":\"")[1].split("\"")[0];
+
+        // 2. Send a message
+        mockMvc.perform(post("/api/v1/chat/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sessionId\":\"" + sessionId + "\",\"message\":\"spam message\",\"language\":\"en\"}"))
+                .andExpect(status().isOk());
+
+        // 3. Get history to fetch the message ID
+        MvcResult historyResult = mockMvc.perform(get("/api/v1/chat/history")
+                        .param("sessionId", sessionId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String historyBody = historyResult.getResponse().getContentAsString();
+        String messageId = historyBody.split("\"id\":\"")[1].split("\"")[0];
+
+        // 4. Flag the message
+        mockMvc.perform(put("/api/v1/moderation/chat-messages/" + messageId + "/flag")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"moderationNotes\":\"unacceptable content\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(messageId))
+                .andExpect(jsonPath("$.isFlagged").value(true))
+                .andExpect(jsonPath("$.moderationNotes").value("unacceptable content"));
+
+        // 5. Verify the message is in the flagged list
+        mockMvc.perform(get("/api/v1/moderation/chat-messages/flagged")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id == '" + messageId + "')].isFlagged").value(true))
+                .andExpect(jsonPath("$[?(@.id == '" + messageId + "')].moderationNotes").value("unacceptable content"));
     }
 }

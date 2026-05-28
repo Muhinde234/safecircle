@@ -56,4 +56,9 @@ public class ChatMessage {
     @Enumerated(EnumType.STRING)
     private ChatSource source;
 
+    @Column(name = "is_flagged")
+    private Boolean isFlagged = false;
+
+    @Column(name = "moderation_notes")
+    private String moderationNotes;
 }
