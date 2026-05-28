@@ -9,6 +9,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.UUID;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -88,5 +91,41 @@ class ApiSmokeTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"sessionId\":\"\",\"message\":\"hello\"}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void bookmarkEndpointsWorkEndToEnd() throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/v1/sessions/anonymous")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String body = result.getResponse().getContentAsString();
+        String sessionId = body.split("\"sessionId\":\"")[1].split("\"")[0];
+        String targetUuid = UUID.randomUUID().toString();
+
+        // 1. Add a bookmark
+        mockMvc.perform(post("/api/v1/sessions/" + sessionId + "/bookmarks")
+                        .param("type", "CLINIC")
+                        .param("targetId", targetUuid))
+                .andExpect(status().isCreated());
+
+        // 2. Get bookmarks and verify
+        mockMvc.perform(get("/api/v1/sessions/" + sessionId + "/bookmarks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].bookmarkType").value("CLINIC"))
+                .andExpect(jsonPath("$[0].targetId").value(targetUuid));
+
+        // 3. Remove bookmark
+        mockMvc.perform(delete("/api/v1/sessions/" + sessionId + "/bookmarks")
+                        .param("type", "CLINIC")
+                        .param("targetId", targetUuid))
+                .andExpect(status().isNoContent());
+
+        // 4. Get bookmarks and verify empty
+        mockMvc.perform(get("/api/v1/sessions/" + sessionId + "/bookmarks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
     }
 }

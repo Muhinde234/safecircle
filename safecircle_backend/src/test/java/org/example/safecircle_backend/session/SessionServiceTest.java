@@ -4,6 +4,7 @@ import org.example.safecircle_backend.session.dto.CreateSessionRequest;
 import org.example.safecircle_backend.session.dto.SessionResponse;
 import org.example.safecircle_backend.session.model.AnonymousSession;
 import org.example.safecircle_backend.session.repository.AnonymousSessionRepository;
+import org.example.safecircle_backend.session.repository.SessionBookmarkRepository;
 import org.example.safecircle_backend.session.service.SessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,11 +24,14 @@ class SessionServiceTest {
     @Mock
     private AnonymousSessionRepository sessionRepository;
 
+    @Mock
+    private SessionBookmarkRepository bookmarkRepository;
+
     private SessionService sessionService;
 
     @BeforeEach
     void setUp() {
-        sessionService = new SessionService(sessionRepository);
+        sessionService = new SessionService(sessionRepository, bookmarkRepository);
     }
 
     private AnonymousSession buildSavedSession(String nickname) {
@@ -91,5 +95,36 @@ class SessionServiceTest {
                 () -> sessionService.createAnonymousSession(new CreateSessionRequest("thisNicknameIsWayTooLongToAccept"))
         );
         assertTrue(ex.getMessage().contains("too long for a nickname"));
+    }
+
+    @Test
+    void shouldAddBookmark() {
+        UUID sessionUuid = UUID.randomUUID();
+        AnonymousSession session = AnonymousSession.builder().id(sessionUuid).nickname("nina").build();
+        Mockito.when(sessionRepository.findById(sessionUuid)).thenReturn(java.util.Optional.of(session));
+
+        UUID targetUuid = UUID.randomUUID();
+        sessionService.addBookmark(sessionUuid.toString(), "CLINIC", targetUuid.toString());
+
+        Mockito.verify(bookmarkRepository).save(Mockito.any());
+    }
+
+    @Test
+    void shouldRemoveBookmark() {
+        UUID sessionUuid = UUID.randomUUID();
+        AnonymousSession session = AnonymousSession.builder().id(sessionUuid).nickname("nina").build();
+        Mockito.when(sessionRepository.findById(sessionUuid)).thenReturn(java.util.Optional.of(session));
+
+        UUID targetUuid = UUID.randomUUID();
+        org.example.safecircle_backend.session.model.SessionBookmarkId id = org.example.safecircle_backend.session.model.SessionBookmarkId.builder()
+                .sessionId(sessionUuid)
+                .bookmarkType("CLINIC")
+                .targetId(targetUuid)
+                .build();
+        Mockito.when(bookmarkRepository.existsById(id)).thenReturn(true);
+
+        sessionService.removeBookmark(sessionUuid.toString(), "CLINIC", targetUuid.toString());
+
+        Mockito.verify(bookmarkRepository).deleteById(id);
     }
 }
