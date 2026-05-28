@@ -42,13 +42,11 @@ public class AnonymousSession {
     private Boolean isPrivateSession = false;
 
     @CreationTimestamp
-    @NotNull
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
     @UpdateTimestamp
-    @NotNull
     @ColumnDefault("now()")
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;

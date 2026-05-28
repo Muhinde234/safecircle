@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.example.safecircle_backend.session.model.AnonymousSession;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -51,12 +52,14 @@ public class RiskAssessment {
     @NotNull
     @Column(name = "urgency_window", nullable = false, length = 120)
     private String urgencyWindow;
-    @NotNull
+
+    @CreationTimestamp
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "risk_level", columnDefinition = "risk_level not null")
+    @NotNull
+    @Column(name = "risk_level", nullable = false)
     @Enumerated(EnumType.STRING)
     private RiskLevel riskLevel;
 }

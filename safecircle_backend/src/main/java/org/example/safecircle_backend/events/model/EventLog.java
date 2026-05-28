@@ -42,12 +42,12 @@ public class EventLog {
     private Map<String, String> metadata;
 
     @CreationTimestamp
-    @NotNull
     @ColumnDefault("now()")
     @Column(name = "recorded_at", nullable = false)
     private OffsetDateTime recordedAt;
 
-    @Column(name = "event_type", columnDefinition = "event_type not null")
+    @NotNull
+    @Column(name = "event_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private EventType eventType;
 
