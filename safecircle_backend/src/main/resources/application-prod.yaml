@@ -3,11 +3,11 @@ spring:
     activate:
       on-profile: prod
 
-  # Recommended: set real values through environment variables in production.
-  # datasource:
-  #   url: ${DB_URL}
-  #   username: ${DB_USERNAME}
-  #   password: ${DB_PASSWORD}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
 server:
   port: ${PORT:8089}
