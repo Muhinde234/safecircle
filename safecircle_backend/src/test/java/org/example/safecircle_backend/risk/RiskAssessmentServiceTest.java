@@ -1,5 +1,6 @@
 package org.example.safecircle_backend.risk;
 
+import org.example.safecircle_backend.risk.dto.QuestionnaireDto;
 import org.example.safecircle_backend.risk.dto.RiskAssessmentRequest;
 import org.example.safecircle_backend.risk.dto.RiskAssessmentResponse;
 import org.example.safecircle_backend.risk.model.RiskAssessment;
@@ -97,5 +98,14 @@ class RiskAssessmentServiceTest {
                 () -> riskAssessmentService.assess(request)
         );
         assertEquals("hoursSinceEvent must be 0 or greater.", ex.getMessage());
+    }
+
+    @Test
+    void shouldReturnRiskQuestionnaireNodeTree() {
+        QuestionnaireDto response = riskAssessmentService.getQuestionnaire();
+        assertNotNull(response);
+        assertEquals("q_event", response.getStartQuestionId());
+        assertTrue(response.getQuestions().containsKey("q_event"));
+        assertTrue(response.getQuestions().containsKey("q_time_72"));
     }
 }

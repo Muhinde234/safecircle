@@ -135,4 +135,12 @@ class ApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items").isArray());
     }
+
+    @Test
+    void riskQuestionnaireEndpointReturnsOk() throws Exception {
+        mockMvc.perform(get("/api/v1/risk/questionnaire").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.startQuestionId").value("q_event"))
+                .andExpect(jsonPath("$.questions").isNotEmpty());
+    }
 }
