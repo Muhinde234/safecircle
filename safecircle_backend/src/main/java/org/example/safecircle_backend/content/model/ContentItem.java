@@ -55,6 +55,10 @@ public class ContentItem {
     @Column(name = "published")
     private Boolean published = true;
 
+    @Size(max = 255)
+    @Column(name = "audio_url", length = 255)
+    private String audioUrl;
+
     @CreationTimestamp
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)

@@ -104,4 +104,16 @@ class ContentServiceTest {
         );
         assertTrue(ex.getMessage().contains("Invalid category"));
     }
+
+    @Test
+    void shouldReturnLowBandwidthContentWithoutSummary() {
+        List<ContentItem> items = List.of(buildItem("PrEP Guide", "HIV"));
+        Mockito.when(contentItemRepository.findByPublishedTrueOrderByCreatedAtDesc()).thenReturn(items);
+
+        ContentFeedResponse response = contentService.getLowBandwidthContent(null, null);
+
+        assertNotNull(response);
+        assertEquals(1, response.getItems().size());
+        assertNull(response.getItems().getFirst().getDescription()); // summary should be null
+    }
 }

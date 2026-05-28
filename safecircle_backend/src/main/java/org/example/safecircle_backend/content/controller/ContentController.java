@@ -25,4 +25,10 @@ public class ContentController {
                                                                 @RequestParam(required = false) Integer limit) {
         return new ResponseEntity<>(contentService.getContent(category, limit), HttpStatus.OK);
     }
+
+    @GetMapping("/low-bandwidth")
+    public ResponseEntity<ContentFeedResponse> getLowBandwidthContent(@RequestParam(required = false) String category,
+                                                                            @RequestParam(required = false) Integer limit) {
+        return new ResponseEntity<>(contentService.getLowBandwidthContent(category, limit), HttpStatus.OK);
+    }
 }

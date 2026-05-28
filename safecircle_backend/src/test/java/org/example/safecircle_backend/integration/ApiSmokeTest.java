@@ -128,4 +128,11 @@ class ApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
     }
+
+    @Test
+    void lowBandwidthContentEndpointReturnsOk() throws Exception {
+        mockMvc.perform(get("/api/v1/content/low-bandwidth").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items").isArray());
+    }
 }

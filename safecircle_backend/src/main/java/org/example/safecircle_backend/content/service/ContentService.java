@@ -27,6 +27,7 @@ public class ContentService {
                 .category(ContentCategory.valueOf(item.getCategory().toUpperCase()))
                 .language(item.getLanguage())
                 .createdAt(item.getCreatedAt().toString())
+                .audioUrl(item.getAudioUrl())
                 .build();
     }
 
@@ -54,6 +55,27 @@ public class ContentService {
         return ContentFeedResponse.builder()
                 .items(result)
                 .total(result.size())
+                .category(category)
+                .build();
+    }
+
+    public ContentFeedResponse getLowBandwidthContent(String category, Integer limit) {
+        ContentFeedResponse normalFeed = getContent(category, limit);
+        List<ContentItemResponse> lightweight = normalFeed.getItems().stream()
+                .map(item -> ContentItemResponse.builder()
+                        .id(item.getId())
+                        .title(item.getTitle())
+                        .contentType(item.getContentType())
+                        .category(item.getCategory())
+                        .language(item.getLanguage())
+                        .createdAt(item.getCreatedAt())
+                        .audioUrl(item.getAudioUrl())
+                        .build()) // summary/description is omitted
+                .toList();
+
+        return ContentFeedResponse.builder()
+                .items(lightweight)
+                .total(lightweight.size())
                 .category(category)
                 .build();
     }
