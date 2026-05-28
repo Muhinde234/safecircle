@@ -1,0 +1,19 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+server:
+  port: ${PORT:8089}
+
+logging:
+  level:
+    root: WARN
+    org.springframework.web: INFO
+    org.example.safecircle_backend: INFO

@@ -1,0 +1,24 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+    import: optional:file:.env[properties]
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
+
+  flyway:
+    enabled: true
+
+server:
+  port: 8089
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.example.safecircle_backend: DEBUG

@@ -18,4 +18,5 @@ public class ContentItemResponse {
     private ContentCategory category;
     private String language;
     private String createdAt;
+    private String audioUrl;
 }
