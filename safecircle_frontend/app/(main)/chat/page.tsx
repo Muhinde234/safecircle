@@ -7,11 +7,12 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import TrustBadge from '@/components/TrustBadge';
 import { useApp } from '@/app/providers';
 import { translations } from '@/lib/translations';
+import { api } from '@/lib/api';
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
 export default function ChatPage() {
-  const { language, isPrivateSession } = useApp();
+  const { language, isPrivateSession, sessionId } = useApp();
   const t = translations[language];
 
   const [messages, setMessages] = useState<Message[]>([
@@ -34,8 +35,32 @@ export default function ChatPage() {
     }
   }, [input]);
 
+  // Load chat history from backend
+  useEffect(() => {
+    if (!sessionId) return;
+    const loadHistory = async () => {
+      try {
+        const history = await api.getChatHistory(sessionId);
+        if (history && history.length > 0) {
+          const mapped = history.map(h => ({
+            role: h.role === 'user' ? ('user' as const) : ('assistant' as const),
+            content: h.message,
+          }));
+          setMessages(mapped);
+        } else {
+          setMessages([
+            { role: 'assistant', content: t.siraWelcome },
+          ]);
+        }
+      } catch (err) {
+        console.error('Failed to load chat history:', err);
+      }
+    };
+    loadHistory();
+  }, [sessionId, t.siraWelcome]);
+
   const sendMessage = async (content: string) => {
-    if (!content.trim() || isLoading) return;
+    if (!content.trim() || isLoading || !sessionId) return;
     const userMsg: Message = { role: 'user', content: content.trim() };
     const next = [...messages, userMsg];
     setMessages(next);
@@ -43,41 +68,12 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next, language }),
-      });
-
-      if (!res.ok || !res.body) throw new Error('API error');
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
+      const response = await api.sendChatMessage(sessionId, content.trim(), language);
       setIsLoading(false);
-      let acc = '';
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        for (const line of decoder.decode(value).split('\n')) {
-          if (!line.startsWith('data: ')) continue;
-          const data = line.slice(6);
-          if (data === '[DONE]') break;
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.text) {
-              // eslint-disable-next-line react-hooks/immutability
-              acc += parsed.text;
-              setMessages(prev => {
-                const copy = [...prev];
-                copy[copy.length - 1] = { role: 'assistant', content: acc };
-                return copy;
-              });
-            }
-          } catch { /* partial chunk */ }
-        }
-      }
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: response.reply },
+      ]);
     } catch {
       setIsLoading(false);
       setMessages(prev => [
