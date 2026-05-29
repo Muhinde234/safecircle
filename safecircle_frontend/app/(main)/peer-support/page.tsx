@@ -73,7 +73,7 @@ function EndModal({
   onConfirm,
   onCancel,
 }: {
-  t: typeof translations.en;
+  t: typeof translations.en | typeof translations.rw;
   onConfirm: () => void;
   onCancel: () => void;
 }) {

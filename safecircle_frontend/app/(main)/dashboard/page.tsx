@@ -15,12 +15,12 @@ import { translations } from '@/lib/translations';
 const stagger = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.12 } },
-};
+} as const;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } },
-};
+} as const;
 
 /* ── quick-action card ───────────────────────────────── */
 type ActionCardProps = {

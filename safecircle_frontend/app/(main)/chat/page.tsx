@@ -67,6 +67,7 @@ export default function ChatPage() {
           try {
             const parsed = JSON.parse(data);
             if (parsed.text) {
+              // eslint-disable-next-line react-hooks/immutability
               acc += parsed.text;
               setMessages(prev => {
                 const copy = [...prev];

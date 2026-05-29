@@ -15,11 +15,11 @@ import { translations } from '@/lib/translations';
 const stagger = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
-};
+} as const;
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
   show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: 'easeOut' } },
-};
+} as const;
 
 /* ── explainer card ──────────────────────────────────── */
 type CardProps = { icon: LucideIcon; title: string; body: string; index: number };

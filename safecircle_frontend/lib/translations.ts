@@ -426,4 +426,4 @@ export const translations = {
 
 export type TranslationKey = keyof typeof translations.en;
 export type Language = keyof typeof translations;
-export type Translations = typeof translations.en;
+export type Translations = typeof translations.en | typeof translations.rw;
