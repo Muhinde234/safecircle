@@ -11,6 +11,7 @@ interface HeaderProps {
   showBack?: boolean;
   showLanguage?: boolean;
   right?: ReactNode;
+  onBack?: () => void;
 }
 
 export default function Header({
@@ -19,6 +20,7 @@ export default function Header({
   showBack = false,
   showLanguage = true,
   right,
+  onBack,
 }: HeaderProps) {
   const router = useRouter();
 
@@ -26,7 +28,7 @@ export default function Header({
     <header className="bg-white border-b border-mint-teal/60 px-4 py-3 flex items-center gap-3 sticky top-0 z-40">
       {showBack && (
         <button
-          onClick={() => router.back()}
+          onClick={() => (onBack ? onBack() : router.back())}
           className="p-1.5 -ml-1.5 text-deep-navy hover:text-teal transition-colors rounded-xl"
           aria-label="Go back"
         >

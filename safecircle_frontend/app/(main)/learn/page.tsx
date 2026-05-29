@@ -1,15 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, ShieldCheck, BookOpen, ChevronRight } from 'lucide-react';
+import { Clock, ShieldCheck, BookOpen, ChevronRight, Bookmark, Volume2 } from 'lucide-react';
 import Header from '@/components/Header';
 import TrustBadge from '@/components/TrustBadge';
 import { useApp } from '@/app/providers';
 import { translations, type Translations } from '@/lib/translations';
-import { articles, type Article } from '@/lib/data';
+import { api } from '@/lib/api';
 
 type Category = 'All' | 'Sexual Health' | 'HIV & STIs' | 'Relationships' | 'Mental Health';
+
+interface Article {
+  id: string | number;
+  title: string;
+  titleRw: string;
+  category: Category;
+  readTime: number;
+  excerpt: string;
+  excerptRw: string;
+  isVerified: boolean;
+  isFeatured: boolean;
+  color: string;
+  audioUrl?: string;
+  language?: string;
+}
 
 const categoryColors: Record<string, string> = {
   'Sexual Health': 'bg-health-green/10 text-health-green border-health-green/20',
@@ -25,11 +40,29 @@ const categoryGradients: Record<string, string> = {
   'Mental Health': 'from-deep-navy/10 to-deep-navy/5',
 };
 
-function ArticleCard({ article, language, t }: {
+function ArticleCard({
+  article,
+  language,
+  t,
+  localT,
+}: {
   article: Article;
   language: string;
   t: Translations;
+  localT: Record<string, string>;
 }) {
+  const { bookmarks, addBookmark, removeBookmark } = useApp();
+  const isBookmarked = bookmarks.some(b => b.bookmarkType === 'ARTICLE' && b.targetId === String(article.id));
+
+  const toggleBookmark = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isBookmarked) {
+      await removeBookmark('ARTICLE', String(article.id));
+    } else {
+      await addBookmark('ARTICLE', String(article.id));
+    }
+  };
+
   const title = language === 'rw' ? article.titleRw : article.title;
   const excerpt = language === 'rw' ? article.excerptRw : article.excerpt;
   const colorClass = categoryColors[article.category] ?? 'bg-slate-gray/10 text-slate-gray border-slate-gray/20';
@@ -41,11 +74,20 @@ function ArticleCard({ article, language, t }: {
         <span className={`inline-flex items-center gap-1 border rounded-full font-body font-semibold text-[10px] px-2.5 py-0.5 ${colorClass}`}>
           {article.category}
         </span>
-        {article.isFeatured && (
-          <span className="font-body text-[10px] font-semibold text-teal bg-white/80 px-2 py-0.5 rounded-full border border-teal/20">
-            {t.featured}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {article.isFeatured && (
+            <span className="font-body text-[10px] font-semibold text-teal bg-white/80 px-2 py-0.5 rounded-full border border-teal/20">
+              {t.featured}
+            </span>
+          )}
+          <button
+            onClick={toggleBookmark}
+            aria-label={isBookmarked ? localT.removeBookmark : localT.bookmarkArticle}
+            className="text-teal p-1 hover:bg-teal/10 rounded-full transition-colors"
+          >
+            <Bookmark size={15} fill={isBookmarked ? 'currentColor' : 'none'} />
+          </button>
+        </div>
       </div>
 
       <div className="px-4 py-3">
@@ -56,13 +98,29 @@ function ArticleCard({ article, language, t }: {
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="flex items-center gap-1 font-body text-[11px] text-slate-gray">
               <Clock size={11} strokeWidth={1.5} />
-              {article.readTime} {t.minRead}
+              {article.readTime} {localT.readTime}
             </span>
             {article.isVerified && <TrustBadge variant="clinical" />}
           </div>
-          <button className="flex items-center gap-0.5 font-body text-xs text-teal font-semibold hover:opacity-70 transition-opacity">
-            {t.readMore} <ChevronRight size={12} />
-          </button>
+          <div className="flex items-center gap-3">
+            {article.audioUrl && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const audio = new Audio(article.audioUrl);
+                  audio.play().catch(err => console.error('Audio play error:', err));
+                }}
+                className="flex items-center gap-1 text-xs text-teal font-semibold hover:opacity-75 transition-opacity"
+                title={localT.audioVoiceover}
+              >
+                <Volume2 size={13} />
+                <span className="text-[11px]">{localT.audioVoiceover}</span>
+              </button>
+            )}
+            <button className="flex items-center gap-0.5 font-body text-xs text-teal font-semibold hover:opacity-70 transition-opacity">
+              {t.readMore} <ChevronRight size={12} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -73,6 +131,89 @@ export default function LearnPage() {
   const { language } = useApp();
   const t = translations[language];
   const [activeCategory, setActiveCategory] = useState<Category>('All');
+  const [articlesList, setArticlesList] = useState<Article[]>([]);
+  const [isLowBandwidth, setIsLowBandwidth] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const localT = {
+    en: {
+      lowBandwidth: 'Data Saver (Low Bandwidth)',
+      audioVoiceover: 'Listen',
+      readTime: 'min read',
+      noAudio: 'No audio available',
+      bookmarkArticle: 'Bookmark article',
+      removeBookmark: 'Remove bookmark',
+    },
+    rw: {
+      lowBandwidth: 'Koresha Data Nke',
+      audioVoiceover: 'Umva',
+      readTime: 'iminota yo gusoma',
+      noAudio: 'Nta jwi rihari',
+      bookmarkArticle: 'Bika amakuru',
+      removeBookmark: 'Siba mubitswe',
+    },
+  }[language];
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      setLoading(true);
+      try {
+        const res = isLowBandwidth
+          ? await api.getLowBandwidthContent()
+          : await api.getContent();
+
+        const rawItems = res.items || [];
+        const mapped: Article[] = rawItems.map((item, index) => {
+          let mappedCategory: Category = 'Sexual Health';
+          if (item.category === 'HIV' || item.category === 'STI') {
+            mappedCategory = 'HIV & STIs';
+          } else if (item.category === 'MYTHS') {
+            mappedCategory = 'Mental Health';
+          } else if (item.category === 'PREVENTION') {
+            mappedCategory = 'Sexual Health';
+          } else {
+            mappedCategory = 'Sexual Health';
+          }
+
+          const readTime = Math.max(1, Math.ceil((item.excerpt || item.body || '').split(' ').length / 80));
+
+          return {
+            id: item.id,
+            title: item.title,
+            titleRw: item.title,
+            category: mappedCategory,
+            readTime: readTime,
+            excerpt: item.excerpt || item.body || '',
+            excerptRw: item.excerpt || item.body || '',
+            isVerified: true,
+            isFeatured: index === 0,
+            color: categoryColors[mappedCategory] ?? 'bg-slate-gray/10 text-slate-gray',
+            audioUrl: item.audioUrl,
+            language: item.language,
+          };
+        });
+
+        // Filter by language
+        let displayItems = mapped.filter(item => {
+          if (!item.language) return true;
+          return item.language.toLowerCase() === language.toLowerCase();
+        });
+
+        if (displayItems.length === 0) {
+          displayItems = mapped; // fallback to show all if language specific not found
+        }
+
+        setArticlesList(displayItems);
+      } catch (err) {
+        console.error('Failed to load articles:', err);
+        setArticlesList([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, [isLowBandwidth, language]);
 
   const categories: Category[] = ['All', 'Sexual Health', 'HIV & STIs', 'Relationships', 'Mental Health'];
 
@@ -85,10 +226,10 @@ export default function LearnPage() {
   };
 
   const filtered = activeCategory === 'All'
-    ? articles
-    : articles.filter(a => a.category === activeCategory);
+    ? articlesList
+    : articlesList.filter(a => a.category === activeCategory);
 
-  const featured = articles.find(a => a.isFeatured);
+  const featured = filtered.find(a => a.isFeatured);
 
   return (
     <div className="bg-frost-white min-h-screen">
@@ -113,9 +254,38 @@ export default function LearnPage() {
         </div>
       </div>
 
+      {/* Low-Bandwidth Toggle */}
+      <div className="bg-white px-5 py-2.5 flex items-center justify-between border-b border-mint-teal/20">
+        <span className="font-body text-xs text-slate-gray font-medium">
+          {localT.lowBandwidth}
+        </span>
+        <button
+          onClick={() => setIsLowBandwidth(!isLowBandwidth)}
+          className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${
+            isLowBandwidth ? 'bg-teal' : 'bg-slate-gray/25'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+              isLowBandwidth ? 'transform translate-x-4' : ''
+            }`}
+          />
+        </button>
+      </div>
+
       <div className="px-4 py-4 space-y-4">
+        {/* Loading state */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <div className="w-8 h-8 border-4 border-teal border-t-transparent rounded-full animate-spin" />
+            <p className="font-body text-xs text-slate-gray/70">
+              {language === 'en' ? 'Loading educational articles...' : 'Gushaka amakuru y\'ubuzima...'}
+            </p>
+          </div>
+        )}
+
         {/* Featured banner — only on "All" */}
-        {activeCategory === 'All' && featured && (
+        {!loading && activeCategory === 'All' && featured && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -138,7 +308,7 @@ export default function LearnPage() {
               </p>
               <div className="flex items-center gap-3 mt-3">
                 <span className="flex items-center gap-1 font-body text-[11px] text-mint-teal/80">
-                  <Clock size={10} /> {featured.readTime} {t.minRead}
+                  <Clock size={10} /> {featured.readTime} {localT.readTime}
                 </span>
                 <button className="px-3 py-1.5 bg-white text-teal font-heading font-bold text-xs rounded-xl">
                   {t.readMore}
@@ -149,7 +319,7 @@ export default function LearnPage() {
         )}
 
         {/* Article list */}
-        {filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div className="text-center py-12">
             <BookOpen size={40} className="text-slate-gray/30 mx-auto mb-3" strokeWidth={1} />
             <p className="font-body text-sm text-slate-gray">
@@ -158,14 +328,14 @@ export default function LearnPage() {
           </div>
         )}
 
-        {filtered.map((article, i) => (
+        {!loading && filtered.map((article, i) => (
           <motion.div
             key={article.id}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: i * 0.05 }}
           >
-            <ArticleCard article={article} language={language} t={t} />
+            <ArticleCard article={article} language={language} t={t} localT={localT} />
           </motion.div>
         ))}
 

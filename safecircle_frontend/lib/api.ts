@@ -36,17 +36,21 @@ export interface ContentItemResponse {
   createdAt?: string;
 }
 
+export interface RiskAssessmentShortcut {
+  eventType: string;
+  hoursSinceEvent: number;
+  symptomsPresent: boolean;
+}
+
 export interface QuestionnaireOption {
   text: string;
-  textRw: string;
-  nextNodeId?: string;
-  recommendation?: string;
+  nextQuestionId?: string;
+  riskAssessmentShortcut?: RiskAssessmentShortcut;
 }
 
 export interface QuestionnaireNode {
   id: string;
   text: string;
-  textRw: string;
   options: QuestionnaireOption[];
 }
 
@@ -57,8 +61,8 @@ export interface QuestionnaireDto {
 
 export interface RiskAssessmentResponse {
   riskLevel: string;
-  recommendation: string;
-  details: string;
+  recommendedAction: string;
+  urgencyWindow: string;
 }
 
 export interface ChatMessageResponse {

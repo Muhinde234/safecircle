@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   MessageCircle, MapPin, BookOpen, HeartPulse,
-  Bell, User, Lock, Phone, ChevronRight,
+  Bell, User, Lock, Phone, ChevronRight, ShieldCheck
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import SafeCircleLogo from '@/components/SafeCircleLogo';
@@ -179,6 +179,32 @@ export default function DashboardPage() {
               <ChevronRight size={12} strokeWidth={2.5} />
             </Link>
           </div>
+        </motion.div>
+
+        {/* Risk Assessment Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.42 }}
+          className="mt-4 bg-teal/5 rounded-2xl p-4 flex items-center gap-3 border border-teal/15"
+        >
+          <div className="w-10 h-10 rounded-xl bg-teal/10 flex items-center justify-center flex-none">
+            <ShieldCheck size={18} className="text-teal" strokeWidth={1.5} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-heading font-semibold text-sm text-deep-navy">
+              {language === 'en' ? 'Unsure about an exposure?' : 'Ufite impungenge ku gikorwa cyabaye?'}
+            </p>
+            <p className="font-body text-[11px] text-slate-gray mt-0.5">
+              {language === 'en' ? 'Take our confidential risk assessment.' : 'Kora isuzuma ryacu ry\'ibanga.'}
+            </p>
+          </div>
+          <Link
+            href="/risk"
+            className="flex-none px-3.5 py-2 bg-teal text-white font-heading font-bold text-xs rounded-xl shadow-sm hover:opacity-90 active:scale-95 transition-all"
+          >
+            {language === 'en' ? 'Check Now' : 'Genzura'}
+          </Link>
         </motion.div>
 
         {/* Emergency banner */}
