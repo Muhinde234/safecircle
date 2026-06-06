@@ -294,6 +294,7 @@ The Next.js frontend has client-side route handlers built with React/TypeScript 
 | `/dashboard` | `app/(main)/dashboard/page.tsx` | **Interactive Dashboard:** Tracks bookmark counts, test scheduling logs, risk stats. |
 | `/profile` | `app/(main)/profile/page.tsx` | **Private Profile:** Anonymously saved clinics, bookmarked reading lists, clear browser storage options. |
 | `/privacy` | `app/(main)/privacy/page.tsx` | **Privacy Center:** Detailed policies on zero tracker footprint and data caching. |
+| `/peer-support` | `app/(main)/peer-support/page.tsx` | **Peer Support Chat:** Anonymously connect with simulated counselor to share feelings and receive non-judgmental guidance. |
 
 ---
 
